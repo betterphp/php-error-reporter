@@ -1,0 +1,27 @@
+{
+    "name": "betterphp/PROJECT_NAME",
+    "version": "1.0.0",
+    "type": "library",
+    "license": "GPL-3.0",
+    "description": "",
+    "keywords": [],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/betterphp/php-code-style.git"
+        }
+    ],
+    "require-dev": {
+        "betterphp/php-code-style": "dev-master",
+        "squizlabs/php_codesniffer": "~2",
+        "phpunit/phpunit": "~6"
+    },
+    "require": {
+        "sentry/sentry": "~1"
+    },
+    "autoload": {
+        "psr-4": {
+            "betterphp\\example\\": "./src"
+        }
+    }
+}
