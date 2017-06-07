@@ -91,12 +91,15 @@ abstract class reporter {
             $redirect_to_error_url();
         });
 
+        // Strange nesting is to make sure this handler gets called last
         register_shutdown_function(function () use ($redirect_to_error_url): void {
-            $last_error = error_get_last();
+            register_shutdown_function(function () use ($redirect_to_error_url): void {
+                $last_error = error_get_last();
 
-            if ($last_error !== null) {
-                $redirect_to_error_url();
-            }
+                if ($last_error !== null) {
+                    $redirect_to_error_url();
+                }
+            });
         });
     }
 
@@ -152,17 +155,20 @@ abstract class reporter {
             $show_error($get_error_message($err_no, $err_message, $err_file, $err_line));
         });
 
+        // Strange nesting is to make sure this handler gets called last
         register_shutdown_function(function () use ($show_error, $get_error_message): void {
-            $last_error = error_get_last();
+            register_shutdown_function(function () use ($show_error, $get_error_message): void {
+                $last_error = error_get_last();
 
-            if ($last_error !== null) {
-                $show_error($get_error_message(
-                    $last_error['type'],
-                    $last_error['message'],
-                    $last_error['file'],
-                    $last_error['line']
-                ));
-            }
+                if ($last_error !== null) {
+                    $show_error($get_error_message(
+                        $last_error['type'],
+                        $last_error['message'],
+                        $last_error['file'],
+                        $last_error['line']
+                    ));
+                }
+            });
         });
     }
 
