@@ -6,7 +6,11 @@ namespace betterphp\error_reporting;
 
 class sentry_reporter extends reporter {
 
-    private $report_url = '';
+    private $hostname = null;
+    private $username = null;
+    private $password = null;
+    private $private_id = null;
+
     private $user_context = [];
 
     private $client;
@@ -23,19 +27,49 @@ class sentry_reporter extends reporter {
      * @return void
      */
     public function set_report_url(string $hostname, string $username, string $password, int $project_id): void {
-        $this->report_url = "https://{$username}:{$password}@{$hostname}/{$project_id}";
+        $this->hostname = $hostname;
+        $this->username = $username;
+        $this->password = $password;
+        $this->project_id = $project_id;
+    }
+
+    /**
+     * Gets the URL to report internal errors to
+     *
+     * @return string The URL
+     */
+    public function get_internal_report_url(): string {
+        if ($this->hostname === null
+        || $this->username === null
+        || $this->password === null
+        || $this->project_id === null) {
+            throw new \Exception('URL has not been set');
+        }
+
+        return "https://{$this->username}:{$this->password}@{$this->hostname}/{$this->project_id}";
+    }
+
+    /**
+     * Gets the URL to report client errors to
+     *
+     * @return string The URL
+     */
+    public function get_client_report_url(): string {
+        if ($this->hostname === null
+        || $this->username === null
+        || $this->password === null
+        || $this->project_id === null) {
+            throw new \Exception('URL has not been set');
+        }
+
+        return "https://{$this->username}@{$this->hostname}/{$this->project_id}";
     }
 
      /**
      * @inheritDoc
      */
     public function register_reporting_handler(): void {
-        // This makes no sense if there is nowhere to send errors
-        if ($this->report_url === '') {
-            throw new \Exception('Report URL is not set');
-        }
-
-        $this->client = new \Raven_Client($this->report_url, [
+        $this->client = new \Raven_Client($this->get_internal_report_url(), [
             'sample_rate' => 1,
             'environment' => $this->environment,
             'tags' => [
