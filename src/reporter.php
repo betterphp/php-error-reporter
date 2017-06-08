@@ -10,16 +10,33 @@ abstract class reporter {
     protected $redirect_url = '';
     protected $environment = 'unknown';
 
+    private static $instance = null;
+
     /**
      * Creates a new reporter instance
      */
-    public function __construct() {
+    private function __construct() {
         // Want to log or display all errors
         error_reporting(E_ALL);
 
         // These need to be set in order for errors to cbe correctly captured
         ini_set('display_errors', 'On');
         ini_set('html_errors', 'Off');
+    }
+
+    /**
+     * Gets the instance of the current error reporter or creates a new one
+     *
+     * @return reporter The reporter
+     */
+    public static function get(): reporter {
+        $class_name = get_called_class();
+
+        if (self::$instance === null) {
+            self::$instance = new $class_name();
+        }
+
+        return self::$instance;
     }
 
     /**
