@@ -57,4 +57,25 @@ class sentry_reporter extends reporter {
         return $this->client;
     }
 
+    /**
+     * Sets a list of fields used to identify a user
+     *
+     * @param array $fields Key value pair of fields
+     * @param boolean $merge If the new values shoudl be merged with the existing ones or replace them
+     *
+     * @return void
+     */
+    public function set_user_context(array $fields, bool $merge = true): void {
+        $this->client->user_context($fields, $merge);
+    }
+
+    /**
+     * Gets a list of user fields
+     *
+     * @return array Key value pair of fields
+     */
+    public function get_user_context(): array {
+        return $this->client->context->user;
+    }
+
 }
