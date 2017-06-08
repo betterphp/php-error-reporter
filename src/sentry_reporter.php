@@ -7,6 +7,7 @@ namespace betterphp\error_reporting;
 class sentry_reporter extends reporter {
 
     private $report_url = '';
+    private $user_context = [];
 
     private $client;
     private $handler;
@@ -46,6 +47,11 @@ class sentry_reporter extends reporter {
         $this->handler->registerExceptionHandler();
         $this->handler->registerErrorHandler();
         $this->handler->registerShutdownFunction();
+
+        // Reset the user context if it's been set before registering handlers.
+        if (!empty($this->user_context)) {
+            $this->set_user_context($this->user_context, false);
+        }
     }
 
     /**
@@ -66,7 +72,16 @@ class sentry_reporter extends reporter {
      * @return void
      */
     public function set_user_context(array $fields, bool $merge = true): void {
-        $this->client->user_context($fields, $merge);
+        // User context is tracked internally to allow for it bneing set before the handler is registered.
+        if ($merge) {
+            $fields = array_merge($this->user_context, $fields);
+        }
+
+        $this->user_context = $fields;
+
+        if ($this->client !== null) {
+            $this->client->user_context($fields, false);
+        }
     }
 
     /**
@@ -75,7 +90,7 @@ class sentry_reporter extends reporter {
      * @return array Key value pair of fields
      */
     public function get_user_context(): array {
-        return $this->client->context->user;
+        return $this->user_context;
     }
 
 }
