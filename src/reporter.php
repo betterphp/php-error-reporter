@@ -15,7 +15,7 @@ abstract class reporter {
     /**
      * Creates a new reporter instance
      */
-    private function __construct() {
+    public function __construct() {
         // Want to log or display all errors
         error_reporting(E_ALL);
 
