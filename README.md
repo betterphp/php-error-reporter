@@ -1,7 +1,7 @@
 # PHP Error Reporting
 Common error handler included in most of my projects
 
-[![Build Status](https://ci.jacekk.co.uk/buildStatus/icon?job=PHP Error Reporter)](https://ci.jacekk.co.uk/view/libraries/job/PHP%20Error%20Reporter/)
+[![Build Status](https://ci.jacekk.co.uk/buildStatus/icon?job=PHP%20Error%20Reporter)](https://ci.jacekk.co.uk/view/libraries/job/PHP%20Error%20Reporter/)
 
 Code coverage report is published [here by Jenkins](https://ci.jacekk.co.uk/view/libraries/job/PHP%20Error%20Reporter/Code_Coverage)
 
