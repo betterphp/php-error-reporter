@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use betterphp\utils\reflection;
+
 use betterphp\error_reporting\reporter;
 
 class ReporterTest extends ReporterTestCase {
@@ -33,6 +35,29 @@ class ReporterTest extends ReporterTestCase {
 
         // Another call should return the same instance
         $this->assertSame($new_reporter, $other_new_reporter);
+    }
+
+    /**
+     * @dataProvider dataSet
+     */
+    public function testSet(string $method_name, string $property_name, $value) {
+        $reporter = $this->getMockReporter();
+
+        // Set an expected value
+        $reporter->$method_name($value);
+
+        $actual = reflection::get_property($reporter, $property_name);
+
+        // Should have been set
+        $this->assertSame($value, $actual);
+    }
+
+    public function dataSet() {
+        return [
+            ['set_show_errors', 'show_errors', true],
+            ['set_redirect_url', 'redirect_url', 'such url, very invalid'],
+            ['set_environment', 'environment', 'much_env'],
+        ];
     }
 
 }
