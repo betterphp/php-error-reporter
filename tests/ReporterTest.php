@@ -24,4 +24,15 @@ class ReporterTest extends ReporterTestCase {
         $this->assertSame('Off', ini_get('html_errors'));
     }
 
+    public function testGet() {
+        $new_reporter = $this->getMockReporter()::get();
+        $other_new_reporter = $this->getMockReporter()::get();
+
+        // Static call to get() should have returned a reporter
+        $this->assertInstanceOf(reporter::class, $new_reporter);
+
+        // Another call should return the same instance
+        $this->assertSame($new_reporter, $other_new_reporter);
+    }
+
 }
