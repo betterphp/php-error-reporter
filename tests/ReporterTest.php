@@ -98,16 +98,20 @@ class ReporterTest extends ReporterTestCase {
 
         $this->assertCount(1, $new_headers);
         $this->assertSame($expected_header, $new_headers[0]);
-
-        print_r($new_headers);
     }
 
     public function testRegisterRedirectHandler(): void {
         $reporter = $this->getMockReporter();
+
+        // This is a placeholder
+        $this->assertTrue(true);
     }
 
     public function testShowError(): void {
         $reporter = $this->getMockReporter();
+
+        // This is a placeholder
+        $this->assertTrue(true);
     }
 
     public function testGetErrorMessage(): void {
@@ -126,6 +130,9 @@ class ReporterTest extends ReporterTestCase {
 
     public function testRegisterOutputHandler(): void {
         $reporter = $this->getMockReporter();
+
+        // This is a placeholder
+        $this->assertTrue(true);
     }
 
 }
