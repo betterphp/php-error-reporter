@@ -60,4 +60,18 @@ class ReporterTest extends ReporterTestCase {
         ];
     }
 
+    public function testGetErrorMessage(): void {
+        $reporter = $this->getMockReporter();
+
+        $expected_message = 'E_NOTICE: Watch out in file on line 123';
+        $actual_message = reflection::call_method($reporter, 'get_error_message', [
+            E_NOTICE,
+            'Watch out',
+            'file',
+            123,
+        ]);
+
+        $this->assertSame($expected_message, $actual_message);
+    }
+
 }

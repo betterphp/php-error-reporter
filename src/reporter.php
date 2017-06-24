@@ -73,51 +73,98 @@ abstract class reporter {
     }
 
     /**
+     * Redirect the browser to the configured error page URL
+     *
+     * @return void
+     */
+    private function redirect_to_error_url(): void {
+        // Don't do anything if the error has been suppressed
+        if (error_reporting() === 0) {
+            return;
+        }
+
+        // Clear any existing output so that we can do a redirect or show the message cleanly.
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        // Don't redirect to nowhere
+        if ($this->redirect_url === '') {
+            echo 'Internal error';
+        } else {
+            header('Location: ' . $this->redirect_url);
+        }
+
+        die();
+    }
+
+    /**
      * Sets up error handlers to redirect the user to a friendly URL
      *
      * @return void
      */
     public function register_redirect_handler(): void {
-        $redirect_to_error_url = function (): void {
-            // Don't do anything if the error has been suppressed
-            if (error_reporting() === 0) {
-                return;
-            }
-
-            // Clear any existing output so that we can do a redirect or show the message cleanly.
-            while (ob_get_level() > 0) {
-                ob_end_clean();
-            }
-
-            // Don't redirect to nowhere
-            if ($this->redirect_url === '') {
-                echo 'Internal error';
-            } else {
-                header('Location: ' . $this->redirect_url);
-            }
-
-            die();
-        };
-
-        set_error_handler(function (
-            int $err_no,
-            string $err_message,
-            string $err_file,
-            int $err_line
-        ) use ($redirect_to_error_url): void {
-            $redirect_to_error_url();
+        set_error_handler(function (int $err_no, string $err_message, string $err_file, int $err_line): void {
+            $this->redirect_to_error_url();
         });
 
         // Strange nesting is to make sure this handler gets called last
-        register_shutdown_function(function () use ($redirect_to_error_url): void {
-            register_shutdown_function(function () use ($redirect_to_error_url): void {
+        register_shutdown_function(function (): void {
+            register_shutdown_function(function (): void {
                 $last_error = error_get_last();
 
                 if ($last_error !== null) {
-                    $redirect_to_error_url();
+                    $this->redirect_to_error_url();
                 }
             });
         });
+    }
+
+    /**
+     * Outputs an error messages in a vaguely formatted way
+     *
+     * @param string $message The message to output
+     *
+     * @return void
+     */
+    private function show_error(string $message): void {
+        // Don't do anything if the error has been suppressed
+        if (error_reporting() === 0) {
+            return;
+        }
+
+        // Clear any existing output so that we can do a redirect or show the message cleanly.
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        echo '<pre>', htmlentities($message), '</pre>';
+
+        die();
+    }
+
+    /**
+     * Formats a friendly message from error info
+     *
+     * @param integer $err_no The value of the E_ constant
+     * @param string $err_message The error message
+     * @param string $err_file The file that the error occured in
+     * @param integer $err_line The line that it occured on
+     *
+     * @return string A formatted message
+     */
+    private function get_error_message(int $err_no, string $err_message, string $err_file, int $err_line): string {
+        $error_constants = [];
+
+        foreach (get_defined_constants(true)['Core'] as $name => $value) {
+            if (substr($name, 0, 2) === 'E_') {
+                $error_constants[$value] = $name;
+            }
+        }
+
+        $level = ($error_constants[$err_no] ?? 'E_UNKNOWN');
+
+        return "{$level}: {$err_message} in {$err_file} on line {$err_line}";
     }
 
     /**
@@ -126,59 +173,21 @@ abstract class reporter {
      * @return void
      */
     public function register_output_handler(): void {
-        $show_error = function (string $message): void {
-            // Don't do anything if the error has been suppressed
-            if (error_reporting() === 0) {
-                return;
-            }
-
-            // Clear any existing output so that we can do a redirect or show the message cleanly.
-            while (ob_get_level() > 0) {
-                ob_end_clean();
-            }
-
-            echo '<pre>', htmlentities($message), '</pre>';
-
-            die();
-        };
-
-        $get_error_message = function (int $err_no, string $err_message, string $err_file, int $err_line): string {
-            $error_constants = [];
-
-            foreach (get_defined_constants(true)['Core'] as $name => $value) {
-                if (substr($name, 0, 2) === 'E_') {
-                    $error_constants[$value] = $name;
-                }
-            }
-
-            $level = ($error_constants[$err_no] ?? 'E_UNKNOWN');
-
-            return "{$level}: {$err_message} in {$err_file} on line {$err_line}";
-        };
-
-        set_exception_handler(function (\Throwable $exception) use ($show_error) {
-            $show_error($exception->getMessage() . "\n" . $exception->getTraceAsString());
+        set_exception_handler(function (\Throwable $exception) {
+            $this->show_error($exception->getMessage() . "\n" . $exception->getTraceAsString());
         });
 
-        set_error_handler(function (
-            int $err_no,
-            string $err_message,
-            string $err_file,
-            int $err_line
-        ) use (
-            $show_error,
-            $get_error_message
-        ): void {
-            $show_error($get_error_message($err_no, $err_message, $err_file, $err_line));
+        set_error_handler(function (int $err_no, string $err_message, string $err_file, int $err_line): void {
+            $this->show_error($this->get_error_message($err_no, $err_message, $err_file, $err_line));
         });
 
         // Strange nesting is to make sure this handler gets called last
-        register_shutdown_function(function () use ($show_error, $get_error_message): void {
-            register_shutdown_function(function () use ($show_error, $get_error_message): void {
+        register_shutdown_function(function (): void {
+            register_shutdown_function(function (): void {
                 $last_error = error_get_last();
 
                 if ($last_error !== null) {
-                    $show_error($get_error_message(
+                    $this->show_error($this->get_error_message(
                         $last_error['type'],
                         $last_error['message'],
                         $last_error['file'],
