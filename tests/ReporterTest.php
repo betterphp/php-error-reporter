@@ -3,14 +3,34 @@
 declare(strict_types=1);
 
 use betterphp\utils\reflection;
+use betterphp\native_mock\native_mock;
 
 use betterphp\error_reporting\reporter;
 
+/**
+ * @covers betterphp\error_reporting\reporter
+ */
 class ReporterTest extends ReporterTestCase {
 
+    use native_mock;
+
+    public function setUp() {
+        $this->nativeMockSetUp();
+    }
+
+    public function tearDown() {
+        $this->nativeMockTearDown();
+    }
+
     private function getMockReporter(): reporter {
-        return $this->getMockBuilder(reporter::class)
-                    ->getMockForAbstractClass();
+        $reporter = $this->getMockBuilder(reporter::class)
+                         ->getMockForAbstractClass();
+
+        $this->redefineMethod(reporter::class, 'terminate', function (): void {
+            return;
+        });
+
+        return $reporter;
     }
 
     public function testSetIniValues(): void {
@@ -60,6 +80,36 @@ class ReporterTest extends ReporterTestCase {
         ];
     }
 
+    public function testRedirectToErrorUrl(): void {
+        $reporter = $this->getMockReporter();
+
+        $new_headers = [];
+
+        $this->redefineFunction('header', function (string $header) use (&$new_headers) {
+            $new_headers[] = $header;
+        });
+
+        $expected_url = 'such_url/very_handler.html';
+        $expected_header = "Location: {$expected_url}";
+
+        $reporter->set_redirect_url($expected_url);
+
+        reflection::call_method($reporter, 'redirect_to_error_url');
+
+        $this->assertCount(1, $new_headers);
+        $this->assertSame($expected_header, $new_headers[0]);
+
+        print_r($new_headers);
+    }
+
+    public function testRegisterRedirectHandler(): void {
+        $reporter = $this->getMockReporter();
+    }
+
+    public function testShowError(): void {
+        $reporter = $this->getMockReporter();
+    }
+
     public function testGetErrorMessage(): void {
         $reporter = $this->getMockReporter();
 
@@ -72,6 +122,10 @@ class ReporterTest extends ReporterTestCase {
         ]);
 
         $this->assertSame($expected_message, $actual_message);
+    }
+
+    public function testRegisterOutputHandler(): void {
+        $reporter = $this->getMockReporter();
     }
 
 }

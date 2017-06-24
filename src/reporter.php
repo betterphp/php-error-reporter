@@ -73,6 +73,15 @@ abstract class reporter {
     }
 
     /**
+     * Wraps the die() function to make tests easier
+     *
+     * @return void
+     */
+    private function terminate(): void {
+        die();
+    }
+
+    /**
      * Redirect the browser to the configured error page URL
      *
      * @return void
@@ -95,7 +104,7 @@ abstract class reporter {
             header('Location: ' . $this->redirect_url);
         }
 
-        die();
+        $this->terminate();
     }
 
     /**
@@ -140,7 +149,7 @@ abstract class reporter {
 
         echo '<pre>', htmlentities($message), '</pre>';
 
-        die();
+        $this->terminate();
     }
 
     /**
