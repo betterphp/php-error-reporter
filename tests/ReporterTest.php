@@ -228,8 +228,71 @@ class ReporterTest extends ReporterTestCase {
     public function testRegisterOutputHandler(): void {
         $reporter = $this->getMockReporter();
 
-        // This is a placeholder
-        $this->assertTrue(true);
+        $exception_handlers = [];
+        $error_handlers = [];
+        $shutdown_functions = [];
+
+        $this->redefineFunction(
+            'set_exception_handler',
+            function (callable $handler) use (&$exception_handlers): void {
+                $exception_handlers[] = $handler;
+            }
+        );
+
+        $this->redefineFunction(
+            'set_error_handler',
+            function (callable $handler) use (&$error_handlers): void {
+                $error_handlers[] = $handler;
+            }
+        );
+
+        $this->redefineFunction(
+            'register_shutdown_function',
+            function (callable $shutdown_function) use (&$shutdown_functions): void {
+                $shutdown_functions[] = $shutdown_function;
+            }
+        );
+
+        $reporter->register_output_handler();
+
+        // Should have added one of each handler
+        $this->assertCount(1, $exception_handlers);
+        $this->assertCount(1, $error_handlers);
+        $this->assertCount(1, $shutdown_functions);
+
+        $shutdown_functions[0]();
+
+        // Should have added another shutdown function
+        $this->assertCount(2, $shutdown_functions);
+
+        // Each handler should output something when called
+        ob_start();
+        $exception_handlers[0](new \Exception('Such exception, very throwable'));
+        $output = ob_get_clean();
+
+        $this->assertNotEmpty($output);
+
+        ob_start();
+        $error_handlers[0](0,'such error', 'very file', 12);
+        $output = ob_get_clean();
+
+        $this->assertNotEmpty($output);
+
+        // Mock a returned error
+        $this->redefineFunction('error_get_last', function (): array {
+            return [
+                'type' => E_WARNING,
+                'message' => 'Very warn',
+                'file' => 'doge.php',
+                'line' => 1934,
+            ];
+        });
+
+        ob_start();
+        $shutdown_functions[1]();
+        $output = ob_get_clean();
+
+        $this->assertNotEmpty($output);
     }
 
 }
