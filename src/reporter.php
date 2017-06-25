@@ -72,6 +72,7 @@ abstract class reporter {
         $this->environment = $environment;
     }
 
+    // @codeCoverageIgnoreStart
     /**
      * Wraps the die() function to make tests easier
      *
@@ -95,6 +96,7 @@ abstract class reporter {
             ob_end_clean();
         }
     }
+    // @codeCoverageIgnoreEnd
 
     /**
      * Redirect the browser to the configured error page URL
