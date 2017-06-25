@@ -103,6 +103,33 @@ class ReporterTest extends ReporterTestCase {
         $this->assertSame($expected_header, $new_headers[0]);
     }
 
+    public function testRedirectToErrorUrlWithDisabledErrors(): void {
+        $reporter = $this->getMockReporter();
+
+        // Turn off error_reporting
+        $initial_value = error_reporting(0);
+
+        ob_start();
+        reflection::call_method($reporter, 'redirect_to_error_url');
+        $output = ob_get_clean();
+
+        // Now turn it back on
+        error_reporting($initial_value);
+
+        // Normally a message would output if there is no URL set
+        $this->assertEmpty($output);
+    }
+
+    public function testRedirectToErrorUrlWithNoUrl(): void {
+        $reporter = $this->getMockReporter();
+
+        ob_start();
+        reflection::call_method($reporter, 'redirect_to_error_url');
+        $output = ob_get_clean();
+
+        $this->assertSame('Internal error', $output);
+    }
+
     public function testRegisterRedirectHandler(): void {
         $reporter = $this->getMockReporter();
 

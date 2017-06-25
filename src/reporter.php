@@ -75,6 +75,8 @@ abstract class reporter {
     /**
      * Wraps the die() function to make tests easier
      *
+     * This can't be tested as it ends the phpunit process before it finishes
+     *
      * @return void
      */
     private function terminate(): void {
@@ -83,6 +85,8 @@ abstract class reporter {
 
     /**
      * Used to end and discard any existing output buffers
+     *
+     * This is hard to test as phpunit has a check for tests that close too many output buffers
      *
      * @return void
      */
