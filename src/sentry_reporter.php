@@ -9,7 +9,7 @@ class sentry_reporter extends reporter {
     private $hostname = null;
     private $username = null;
     private $password = null;
-    private $private_id = null;
+    private $project_id = null;
 
     private $user_context = [];
 
