@@ -140,8 +140,31 @@ class ReporterTest extends ReporterTestCase {
     public function testShowError(): void {
         $reporter = $this->getMockReporter();
 
-        // This is a placeholder
-        $this->assertTrue(true);
+        $message = 'Such error';
+        $expected_output = "<pre>{$message}</pre>";
+
+        ob_start();
+        reflection::call_method($reporter, 'show_error', [$message]);
+        $actual_output = ob_get_clean();
+
+        $this->assertSame($expected_output, $actual_output);
+    }
+
+    public function testShowErrorWithDisabledErrors(): void {
+        $reporter = $this->getMockReporter();
+
+        // Turn off error_reporting
+        $initial_value = error_reporting(0);
+
+        ob_start();
+        reflection::call_method($reporter, 'show_error', ['not used']);
+        $output = ob_get_clean();
+
+        // Now turn it back on
+        error_reporting($initial_value);
+
+        // Normally a message would output if there is no URL set
+        $this->assertEmpty($output);
     }
 
     public function testGetErrorMessage(): void {
