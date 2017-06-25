@@ -26,9 +26,12 @@ class ReporterTest extends ReporterTestCase {
         $reporter = $this->getMockBuilder(reporter::class)
                          ->getMockForAbstractClass();
 
-        $this->redefineMethod(reporter::class, 'terminate', function (): void {
+        $noop = function (): void {
             return;
-        });
+        };
+
+        $this->redefineMethod(reporter::class, 'terminate', $noop);
+        $this->redefineMethod(reporter::class, 'clear_all_output', $noop);
 
         return $reporter;
     }

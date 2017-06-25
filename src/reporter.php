@@ -82,6 +82,17 @@ abstract class reporter {
     }
 
     /**
+     * Used to end and discard any existing output buffers
+     *
+     * @return void
+     */
+    private function clear_all_output(): void {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+    }
+
+    /**
      * Redirect the browser to the configured error page URL
      *
      * @return void
@@ -93,9 +104,7 @@ abstract class reporter {
         }
 
         // Clear any existing output so that we can do a redirect or show the message cleanly.
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        $this->clear_all_output();
 
         // Don't redirect to nowhere
         if ($this->redirect_url === '') {
@@ -143,9 +152,7 @@ abstract class reporter {
         }
 
         // Clear any existing output so that we can do a redirect or show the message cleanly.
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        $this->clear_all_output();
 
         echo '<pre>', htmlentities($message), '</pre>';
 
