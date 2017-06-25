@@ -133,8 +133,52 @@ class ReporterTest extends ReporterTestCase {
     public function testRegisterRedirectHandler(): void {
         $reporter = $this->getMockReporter();
 
-        // This is a placeholder
-        $this->assertTrue(true);
+        $error_handlers = [];
+        $shutdown_functions = [];
+
+        $this->redefineFunction(
+            'set_error_handler',
+            function (callable $handler) use (&$error_handlers): void {
+                $error_handlers[] = $handler;
+            }
+        );
+
+        $this->redefineFunction(
+            'register_shutdown_function',
+            function (callable $function) use (&$shutdown_functions): void {
+                $shutdown_functions[] = $function;
+            }
+        );
+
+        $reporter->register_redirect_handler();
+
+        // Should be one new error handler and shutdown function
+        $this->assertCount(1, $error_handlers);
+        $this->assertCount(1, $shutdown_functions);
+
+        ob_start();
+        $error_handlers[0](0, '', '', 0);
+        $output = ob_get_clean();
+
+        // Error handler should call redirect method which will output as there is no URL set
+        $this->assertSame('Internal error', $output);
+
+        $shutdown_functions[0]();
+
+        // First shutdown function should register a second one
+        $this->assertCount(2, $shutdown_functions);
+
+        // Mock a returned error
+        $this->redefineFunction('error_get_last', function (): array {
+            return [];
+        });
+
+        ob_start();
+        $shutdown_functions[1]();
+        $output = ob_get_clean();
+
+        // Should call the redirect method which will output as there is no URL set
+        $this->assertSame('Internal error', $output);
     }
 
     public function testShowError(): void {
