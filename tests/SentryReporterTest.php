@@ -83,4 +83,89 @@ class SentryReporterTest extends ReporterTestCase {
         ];
     }
 
+    public function testRegisterReportingHandler(): void {
+        // TODO
+        $this->assertTrue(true);
+    }
+
+    public function testGetClient(): void {
+        $mock_client = $this->getMockBuilder(\Raven_Client::class)->getMock();
+        $reporter = new sentry_reporter();
+
+        reflection::set_property($reporter, 'client', $mock_client);
+
+        $this->assertSame($mock_client, $reporter->get_client());
+    }
+
+    public function testSetUserContext(): void {
+        $reporter = new sentry_reporter();
+        $context = [
+            'username' => 'doge',
+            'very' => 'login',
+            'such' => 'email address',
+        ];
+
+        $reporter->set_user_context($context, false);
+
+        $set_context = reflection::get_property($reporter, 'user_context');
+
+        // context should have been set
+        $this->assertSame($context, $set_context);
+    }
+
+    public function testSetUserContextMerged(): void {
+        $reporter = new sentry_reporter();
+
+        $context_one = [
+            'username' => 'doge',
+        ];
+
+        $context_two = [
+            'email' => 'very.email@such.domain',
+        ];
+
+        $expected_context = array_merge($context_one, $context_two);
+
+        $reporter->set_user_context($context_one);
+        $reporter->set_user_context($context_two);
+
+        $actual_context = reflection::get_property($reporter, 'user_context');
+
+        $this->assertEquals($expected_context, $actual_context);
+    }
+
+    public function testSetUserContextCallsClient(): void {
+        $reporter = new sentry_reporter();
+
+        $expected_context = [
+            'username' => 'doge',
+            'email' => 'such.email@address.biz',
+        ];
+
+        $client = $this->getMockBuilder(\Raven_Client::class)
+                       ->setMethods(['user_context'])
+                       ->getMock();
+
+        reflection::set_property($reporter, 'client', $client);
+
+        $client->expects($this->once())
+               ->method('user_context')
+               ->with($expected_context, false);
+
+        $reporter->set_user_context($expected_context);
+    }
+
+    public function testGetUserContext(): void {
+        $reporter = new sentry_reporter();
+
+        $expected_context = [
+            'username' => 'doge',
+            'email' => 'such.email@address.biz',
+        ];
+
+        reflection::set_property($reporter, 'user_context', $expected_context);
+
+        $this->assertSame($expected_context, $reporter->get_user_context());
+    }
+
 }
