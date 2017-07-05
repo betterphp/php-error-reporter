@@ -80,6 +80,7 @@ class ReporterTest extends ReporterTestCase {
             ['set_show_errors', 'show_errors', true],
             ['set_redirect_url', 'redirect_url', 'such url, very invalid'],
             ['set_environment', 'environment', 'much_env'],
+            ['set_release', 'release', 'very hash'],
         ];
     }
 

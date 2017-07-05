@@ -9,6 +9,7 @@ abstract class reporter {
     protected $show_errors = false;
     protected $redirect_url = '';
     protected $environment = 'unknown';
+    protected $release = null;
 
     private static $instance = null;
 
@@ -70,6 +71,17 @@ abstract class reporter {
      */
     public function set_environment(string $environment): void {
         $this->environment = $environment;
+    }
+
+    /**
+     * Sets the release name that errors should be tagged to
+     *
+     * @param string $release The name of this release
+     *
+     * @return void
+     */
+    public function set_release(string $release): void {
+        $this->release = $release;
     }
 
     // @codeCoverageIgnoreStart

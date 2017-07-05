@@ -72,6 +72,7 @@ class sentry_reporter extends reporter {
         $this->client = new \Raven_Client($this->get_internal_report_url(), [
             'sample_rate' => 1,
             'environment' => $this->environment,
+            'release' => $this->release,
             'tags' => [
                 'php_version' => phpversion(),
             ],
