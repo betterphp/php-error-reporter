@@ -65,6 +65,28 @@ class sentry_reporter extends reporter {
         return "https://{$this->username}@{$this->hostname}/{$this->project_id}";
     }
 
+    /**
+     * Gets the client side setup code
+     *
+     * @return string The JavaScript code
+     */
+    public function get_client_script(): string {
+        $client_url = $this->get_client_report_url();
+        $client_options = json_encode([
+            'environment' => $this->environment,
+            'release' => $this->release,
+        ]);
+
+        $user_context = json_encode($this->user_context);
+
+        $code = <<<CODE
+            Raven.config({$client_url}, {$client_options}).install();
+            Raven.setUserContext($user_context);
+CODE;
+
+        return $code;
+    }
+
      /**
      * @inheritDoc
      */
