@@ -142,6 +142,10 @@ abstract class reporter {
      * @return void
      */
     public function register_redirect_handler(): void {
+        set_exception_handler(function (\Throwable $exception): void {
+            $this->redirect_to_error_url();
+        });
+
         set_error_handler(function (int $err_no, string $err_message, string $err_file, int $err_line): void {
             $this->redirect_to_error_url();
         });
@@ -209,7 +213,7 @@ abstract class reporter {
      * @return void
      */
     public function register_output_handler(): void {
-        set_exception_handler(function (\Throwable $exception) {
+        set_exception_handler(function (\Throwable $exception): void {
             $this->show_error($exception->getMessage() . "\n" . $exception->getTraceAsString());
         });
 
