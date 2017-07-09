@@ -134,7 +134,6 @@ class ReporterTest extends ReporterTestCase {
     public function testRegisterRedirectHandler(): void {
         $reporter = $this->getMockReporter();
 
-
         $exception_handlers = [];
         $error_handlers = [];
         $shutdown_functions = [];
