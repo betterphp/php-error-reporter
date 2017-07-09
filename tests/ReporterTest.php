@@ -134,30 +134,9 @@ class ReporterTest extends ReporterTestCase {
     public function testRegisterRedirectHandler(): void {
         $reporter = $this->getMockReporter();
 
-        $exception_handlers = [];
-        $error_handlers = [];
-        $shutdown_functions = [];
-
-        $this->redefineFunction(
-            'set_exception_handler',
-            function (callable $handler) use (&$exception_handlers) {
-                $exception_handlers[] = $handler;
-            }
-        );
-
-        $this->redefineFunction(
-            'set_error_handler',
-            function (callable $handler) use (&$error_handlers): void {
-                $error_handlers[] = $handler;
-            }
-        );
-
-        $this->redefineFunction(
-            'register_shutdown_function',
-            function (callable $function) use (&$shutdown_functions): void {
-                $shutdown_functions[] = $function;
-            }
-        );
+        $this->captureRegisteredFunction('set_exception_handler', $exception_handlers);
+        $this->captureRegisteredFunction('set_error_handler', $error_handlers);
+        $this->captureRegisteredFunction('register_shutdown_function', $shutdown_functions);
 
         $reporter->register_redirect_handler();
 
@@ -245,30 +224,9 @@ class ReporterTest extends ReporterTestCase {
     public function testRegisterOutputHandler(): void {
         $reporter = $this->getMockReporter();
 
-        $exception_handlers = [];
-        $error_handlers = [];
-        $shutdown_functions = [];
-
-        $this->redefineFunction(
-            'set_exception_handler',
-            function (callable $handler) use (&$exception_handlers): void {
-                $exception_handlers[] = $handler;
-            }
-        );
-
-        $this->redefineFunction(
-            'set_error_handler',
-            function (callable $handler) use (&$error_handlers): void {
-                $error_handlers[] = $handler;
-            }
-        );
-
-        $this->redefineFunction(
-            'register_shutdown_function',
-            function (callable $shutdown_function) use (&$shutdown_functions): void {
-                $shutdown_functions[] = $shutdown_function;
-            }
-        );
+        $this->captureRegisteredFunction('set_exception_handler', $exception_handlers);
+        $this->captureRegisteredFunction('set_error_handler', $error_handlers);
+        $this->captureRegisteredFunction('register_shutdown_function', $shutdown_functions);
 
         $reporter->register_output_handler();
 
