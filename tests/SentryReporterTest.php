@@ -98,8 +98,17 @@ class SentryReporterTest extends ReporterTestCase {
     }
 
     public function testRegisterReportingHandler(): void {
-        // TODO
-        $this->assertTrue(true);
+        $reporter = new sentry_reporter();
+        $reporter->set_report_url('such.crash.biz', 'very_username', 'wow', 1);
+        $reporter->set_user_context(['context' => 'here']);
+        $reporter->register_reporting_handler();
+
+        $actual_client = reflection::get_property($reporter, 'client');
+        $actual_handler = reflection::get_property($reporter, 'handler');
+
+        // Should have created the handler and client
+        $this->assertInstanceOf(\Raven_Client::class, $actual_client);
+        $this->assertInstanceOf(\Raven_ErrorHandler::class, $actual_handler);
     }
 
     public function testGetClient(): void {
