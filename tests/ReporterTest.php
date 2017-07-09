@@ -134,8 +134,17 @@ class ReporterTest extends ReporterTestCase {
     public function testRegisterRedirectHandler(): void {
         $reporter = $this->getMockReporter();
 
+
+        $exception_handlers = [];
         $error_handlers = [];
         $shutdown_functions = [];
+
+        $this->redefineFunction(
+            'set_exception_handler',
+            function (callable $handler) use (&$exception_handlers) {
+                $exception_handlers[] = $handler;
+            }
+        );
 
         $this->redefineFunction(
             'set_error_handler',
@@ -154,8 +163,16 @@ class ReporterTest extends ReporterTestCase {
         $reporter->register_redirect_handler();
 
         // Should be one new error handler and shutdown function
+        $this->assertCount(1, $exception_handlers);
         $this->assertCount(1, $error_handlers);
         $this->assertCount(1, $shutdown_functions);
+
+        ob_start();
+        $exception_handlers[0](new \Exception('Oh noes'));
+        $output = ob_get_clean();
+
+        // Error handler should call redirect method which will output as there is no URL set
+        $this->assertSame('Internal error', $output);
 
         ob_start();
         $error_handlers[0](0, '', '', 0);
