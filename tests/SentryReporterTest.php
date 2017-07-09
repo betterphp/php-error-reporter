@@ -83,6 +83,20 @@ class SentryReporterTest extends ReporterTestCase {
         ];
     }
 
+    public function testGetClientScript(): void {
+        $reporter = new sentry_reporter();
+        $reporter->set_report_url('such.crash.biz', 'very_username', 'wow', 1);
+
+        $script = $reporter->get_client_script();
+
+        // Should return a thing
+        $this->assertNotEmpty($script);
+
+        // Should contain the twp JavaScript functions
+        $this->assertContains('Raven.config', $script);
+        $this->assertContains('Raven.setUserContext', $script);
+    }
+
     public function testRegisterReportingHandler(): void {
         // TODO
         $this->assertTrue(true);
