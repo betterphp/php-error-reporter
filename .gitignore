@@ -6,3 +6,6 @@
 
 # Test results
 /test-results
+
+#PHPStrom
+.idea/
