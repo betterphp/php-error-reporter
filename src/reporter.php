@@ -7,6 +7,7 @@ namespace betterphp\error_reporting;
 abstract class reporter {
 
     protected $show_errors = false;
+	protected $redirect_handler = null;
     protected $redirect_url = '';
     protected $environment = 'unknown';
     protected $release = null;
@@ -63,6 +64,25 @@ abstract class reporter {
     }
 
     /**
+     * Sets the handler that users should be handled by if a error is shown
+     *
+     * @param array $handler The handler method to handle the redirects [object, method]
+     * @param array $params The params to pass to the method
+     *
+     * @return void
+     */
+    public function set_redirect_handler(array $handler, array $method_params = []): void {
+        if (!method_exists($handler[0], $handler[1])) {
+            echo 'Internal error';
+
+            $this->terminate();
+        }
+
+        $this->redirect_handler = $handler;
+        $this->redirect_handler[2] = $method_params;
+    }
+
+    /**
      * Sets the name of the environment that the error happened in
      *
      * @param string $environment The name of the environment
@@ -113,7 +133,7 @@ abstract class reporter {
     // @codeCoverageIgnoreEnd
 
     /**
-     * Redirect the browser to the configured error page URL
+     * Redirect the browser to the configured error handler || page URL
      *
      * @return void
      */
@@ -127,8 +147,16 @@ abstract class reporter {
         $this->clear_all_output();
 
         // Don't redirect to nowhere
-        if ($this->redirect_url === '') {
+        if ($this->redirect_url === '' &&
+            is_null($this->redirect_handler)
+        ) {
             echo 'Internal error';
+        } else if (!is_null($this->redirect_handler)) {
+            $class = $this->redirect_handler[0];
+            $method = $this->redirect_handler[1];
+            $method_args = $this->redirect_handler[2];
+
+            $class->$method(...$method_args);
         } else {
             header('Location: ' . $this->redirect_url);
         }
